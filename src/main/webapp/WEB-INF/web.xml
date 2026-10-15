@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+
+  <display-name>MediBook - Clinic Appointment Booking Portal</display-name>
+
+  <!--
+      Servlets and the filter are mapped with the @WebServlet and @WebFilter
+      annotations inside the classes, so they are not repeated here. This file
+      keeps only what annotations cannot express.
+  -->
+
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+
+  <!-- 20 minutes without a click signs the patient out of the dashboard. -->
+  <session-config>
+    <session-timeout>20</session-timeout>
+    <cookie-config>
+      <http-only>true</http-only>
+      <secure>false</secure><!-- set true once the clinic puts a TLS certificate on Tomcat -->
+    </cookie-config>
+    <tracking-mode>COOKIE</tracking-mode>
+  </session-config>
+
+  <error-page>
+    <error-code>404</error-code>
+    <location>/WEB-INF/views/notfound.jsp</location>
+  </error-page>
+
+  <error-page>
+    <error-code>500</error-code>
+    <location>/WEB-INF/views/error.jsp</location>
+  </error-page>
+
+  <error-page>
+    <exception-type>java.lang.Throwable</exception-type>
+    <location>/WEB-INF/views/error.jsp</location>
+  </error-page>
+
+  <jsp-config>
+    <jsp-property-group>
+      <url-pattern>*.jsp</url-pattern>
+      <page-encoding>UTF-8</page-encoding>
+    </jsp-property-group>
+  </jsp-config>
+
+  <!--
+      The JSP pages are written by hand, so the container is NOT asked to trim
+      whitespace between tags. Turning that on removes the single space that
+      sits between a </c:out> and the next tag, which glued "Rohan S. Naik" to
+      "(ID MB-000003)" on the printed slip.
+  -->
+</web-app>

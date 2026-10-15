@@ -1,0 +1,23 @@
+# Render Blueprint: one web service, built from the Dockerfile in this repo.
+#
+# Free instance: 512 MB and 0.1 CPU, 750 instance hours a month. The service
+# sleeps after 15 minutes without traffic and takes about a minute to wake.
+#
+# The three database variables are deliberately not given values here. They are
+# secrets, so `sync: false` makes Render ask for them in the dashboard instead
+# of storing them in the Git repository.
+services:
+  - type: web
+    name: medibook
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    autoDeployTrigger: commit
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
