@@ -15,6 +15,11 @@ services:
     healthCheckPath: /
     autoDeployTrigger: commit
     envVars:
+      # Render forwards traffic to $PORT, whose default on Render is 10000. The
+      # image exposes 8080, and docker/entrypoint.sh moves Tomcat's connector to
+      # whatever PORT says, so pinning it here means nothing has to be detected.
+      - key: PORT
+        value: 8080
       - key: DB_URL
         sync: false
       - key: DB_USER
