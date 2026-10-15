@@ -44,19 +44,27 @@ db.username=${DB_USER:-root}
 db.password=${DB_PASSWORD:-}
 EOF
 
-# Render can be told to send traffic to a port other than 8080. Tomcat's own
-# default is 8080, so this only runs when PORT says otherwise.
-PORT="${PORT:-8080}"
-if [ "$PORT" != "8080" ]; then
-  if [ -f "$BASE/conf/server.xml" ]; then
-    sed -i "s|Connector port=\"8080\" |Connector port=\"$PORT\" |" "$BASE/conf/server.xml"
-    echo "MediBook: Tomcat moved to port $PORT"
-  else
-    echo "MediBook: PORT is $PORT but $BASE/conf/server.xml was not found, staying on 8080" >&2
-  fi
+SERVER_XML="$BASE/conf/server.xml"
+if [ ! -f "$SERVER_XML" ]; then
+  echo "MediBook: $SERVER_XML is missing, cannot configure the HTTP port" >&2
+  exit 1
 fi
 
-echo "MediBook: starting Tomcat for database user ${DB_USER:-root}"
+# 1. Render forwards inbound traffic to the port in the PORT variable, whose
+#    default on Render is 10000. Tomcat listens on 8080 in the image, so the
+#    value of PORT is written into the connector, whatever it is.
+PORT="${PORT:-8080}"
+sed -i "s|<Connector port=\"[0-9]*\"|<Connector port=\"$PORT\"|" "$SERVER_XML"
+
+# 2. Close the shutdown listener. server.xml normally opens port 8005 and
+#    waits there for the single word SHUTDOWN. Render's probes answer that port
+#    with "HEAD /", which Tomcat logs as "Invalid shutdown command", once a
+#    second, forever. A reachable shutdown socket in a container is also
+#    something nobody wants, and nothing in a container is stopped with
+#    catalina.sh stop, so port -1 means "do not open it".
+sed -i "s|<Server port=\"[0-9-]*\"|<Server port=\"-1\"|" "$SERVER_XML"
+
+echo "MediBook: HTTP on port $PORT, shutdown listener disabled, database user ${DB_USER:-root}"
 # the official Tomcat image puts catalina.sh on the PATH, a local Tomcat does
 # not, so try the one inside CATALINA_HOME first and `./scripts/docker-test.sh`
 # works the same way as the container
